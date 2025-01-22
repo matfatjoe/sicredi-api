@@ -34,25 +34,31 @@ class Client
 
     public function authenticate($username, $password)
     {
-        $response = $this->httpClient->post($this->baseUrl . '/auth/openapi/token', [
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'context' => 'COBRANCA',
-                'x-api-key' => $this->apiKey,
-            ],
-            'form_params' => [
-                'username' => $username,
-                'password' => $password,
-                'scope' => 'cobranca',
-                'grant_type' => 'password',
-            ],
-        ]);
+        try {
+            $response = $this->httpClient->post($this->baseUrl . '/auth/openapi/token', [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'context' => 'COBRANCA',
+                    'x-api-key' => $this->apiKey,
+                ],
+                'form_params' => [
+                    'username' => $username,
+                    'password' => $password,
+                    'scope' => 'cobranca',
+                    'grant_type' => 'password',
+                ],
+            ]);
 
-        $data = json_decode($response->getBody(), true);
+            $data = json_decode($response->getBody(), true);
 
-        $this->token = Token::fromArray($data);
+            $this->token = Token::fromArray($data);
 
-        return true;
+            return true;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function refreshToken()
@@ -92,6 +98,11 @@ class Client
         return $this->token;
     }
 
+    public function setToken(array $token)
+    {
+        $this->token = Token::fromArray($token);
+    }
+
     public function getHttpClient()
     {
         return $this->httpClient;
@@ -120,5 +131,10 @@ class Client
     public function boleto()
     {
         return new Resources\Boleto($this);
+    }
+
+    public function webhook()
+    {
+        return new Resources\Webhook($this);
     }
 }

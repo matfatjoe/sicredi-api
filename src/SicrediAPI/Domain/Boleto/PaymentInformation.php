@@ -14,9 +14,9 @@ class PaymentInformation
     //     "nossoNumero":"211001292"}
 
     /**
-     * @var int ID of the transaction
+     * @var string ID of the transaction
      */
-    private int $transactionId;
+    private string $transactionId;
 
     /**
      * @var string String that represents a QR Code

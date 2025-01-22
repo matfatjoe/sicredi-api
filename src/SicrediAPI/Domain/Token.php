@@ -22,9 +22,9 @@ class Token
         int $expiresIn,
         int $refreshExpiresIn,
         string $tokenType,
-        string $idToken = null,
-        int $notBeforePolicy = null,
-        string $sessionState = null
+        string $idToken,
+        int $notBeforePolicy,
+        string $sessionState
     ) {
         $this->scope = $scope;
         $this->accessToken = $accessToken;
@@ -102,7 +102,7 @@ class Token
             $data['expires_in'],
             $data['refresh_expires_in'],
             $data['token_type'],
-            $data['id_token'],
+            $data['id_token'] ?? '',
             $data['not-before-policy'],
             $data['session_state']
         );

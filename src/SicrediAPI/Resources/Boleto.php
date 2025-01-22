@@ -13,44 +13,85 @@ class Boleto extends ResourceAbstract
 {
     public function create(BoletoDomain $boleto): BoletoDomain
     {
-        $payload = BoletoMapper::mapCreateBoleto($boleto);
+        try {
+            $payload = BoletoMapper::mapCreateBoleto($boleto);
 
-        $response = $this->post('/cobranca/boleto/v1/boletos', [
-            'json' => $payload,
-            'headers' => [
-                'cooperativa' => $this->apiClient->getCooperative(),
-                'posto' => $this->apiClient->getPost(),
-            ]
-        ]);
+            $response = $this->post('/cobranca/boleto/v1/boletos', [
+                'json' => $payload,
+                'headers' => [
+                    'cooperativa' => $this->apiClient->getCooperative(),
+                    'posto' => $this->apiClient->getPost(),
+                ]
+            ]);
 
-        $paymentInformation = PaymentInformation::fromArray($response);
+            $paymentInformation = PaymentInformation::fromArray($response);
 
-        $boleto->setPaymentInformation($paymentInformation);
+            $boleto->setPaymentInformation($paymentInformation);
 
-        if ($boleto->getOurNumber() === null) {
-            $boleto->setOurNumber($paymentInformation->getOurNumber());
+            if ($boleto->getOurNumber() === null) {
+                $boleto->setOurNumber($paymentInformation->getOurNumber());
+            }
+
+            return $boleto;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            dd('a', $e, json_decode($e->getResponse()->getBody()->getContents()));
+            throw $e;
+        } catch (\Exception $e) {
+            dd('a', $e);
+            throw $e;
         }
-
-        return $boleto;
     }
 
     public function query(string $ourNumber): BoletoDomain
     {
-        $response = $this->get('/cobranca/boleto/v1/boletos/', [
-            'query' => [
-                'codigoBeneficiario' => $this->apiClient->getBeneficiaryCode(),
-                'nossoNumero' => $ourNumber,
-            ],
-            'headers' => [
-                'cooperativa' => $this->apiClient->getCooperative(),
-                'posto' => $this->apiClient->getPost(),
-            ]
-        ]);
+        try {
+            $response = $this->get('/cobranca/boleto/v1/boletos/', [
+                'query' => [
+                    'codigoBeneficiario' => $this->apiClient->getBeneficiaryCode(),
+                    'nossoNumero' => $ourNumber,
+                ],
+                'headers' => [
+                    'cooperativa' => $this->apiClient->getCooperative(),
+                    'posto' => $this->apiClient->getPost(),
+                ]
+            ]);
 
-        $boleto = BoletoMapper::mapFromQuery($response);
+            $boleto = BoletoMapper::mapFromQuery($response);
 
-        return $boleto;
+            return $boleto;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            throw $e;
+        }
     }
+
+    public function patchInstruction(
+        string $ourNumber,
+        string $endpointSuffix,
+        array $payload = []
+    ) {
+        try {
+            $url = $this->buildInstructionUrl($ourNumber, $endpointSuffix);
+
+            $response = $this->patch($url, [
+                'json' => $payload,
+                'headers' => [
+                    'cooperativa' => $this->apiClient->getCooperative(),
+                    'posto' => $this->apiClient->getPost(),
+                ]
+            ]);
+
+            return $response;
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            throw $e;
+        }
+    }
+
+    protected function buildInstructionUrl(string $ourNumber, string $endpointSuffix): string
+    {
+        $baseUrl = "/cobranca/boleto/v1/boletos/{$ourNumber}";
+        return $baseUrl . $endpointSuffix;
+    }
+
 
     /**
      * Returns the Boletos liquidated in a specific day.
@@ -103,8 +144,6 @@ class Boleto extends ResourceAbstract
                 'linhaDigitavel' => $numericRepresentation
             ]
         ], true);
-
         return $response;
     }
-
 }

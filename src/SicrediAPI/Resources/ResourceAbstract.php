@@ -43,8 +43,26 @@ abstract class ResourceAbstract
     {
         $this->checkToken();
 
-        $response = $this->apiClient->getHttpClient()->get($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options));
+        try {
+            $response = $this->apiClient->getHttpClient()->get($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options));
+        } catch (\GuzzleHttp\Exception\ClientException $th) {
+            throw $th;
+        }
+        return $this->response($response);
+    }
 
+    protected function patch($url, $options = [])
+    {
+        $this->checkToken();
+
+        try {
+            $response = $this->apiClient->getHttpClient()->patch(
+                $this->apiClient->getBaseUrl() . $url,
+                $this->buildRequestOptions($options)
+            );
+        } catch (\GuzzleHttp\Exception\ClientException $th) {
+            throw $th;
+        }
         return $this->response($response);
     }
 
@@ -55,8 +73,7 @@ abstract class ResourceAbstract
         try {
             $response = $this->apiClient->getHttpClient()->post($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options));
         } catch (\GuzzleHttp\Exception\ClientException $th) {
-            $response = $th->getResponse()->getBody()->getContents();
-            return $response;
+            throw $th;
         }
 
         return $this->response($response);
@@ -80,12 +97,8 @@ abstract class ResourceAbstract
         return $this->response($response);
     }
 
-    private function response(\Psr\Http\Message\ResponseInterface $response)
+    private function response($response)
     {
-        if ($response->getHeader('Content-Type')[0] != 'application/json') {
-            return $response->getBody()->getContents();
-        }
-
         $response = json_decode($response->getBody()->getContents(), true);
 
         return $this->sandboxResponseFixes($response);
@@ -124,5 +137,4 @@ abstract class ResourceAbstract
 
         return $response;
     }
-
 }
