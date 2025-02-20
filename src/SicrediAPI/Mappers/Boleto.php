@@ -19,7 +19,6 @@ class Boleto
     public static function mapCreateBoleto(BoletoDomain $boleto)
     {
         $base = [
-            'beneficiarioFinal' => (new Beneficiary($boleto->getBeneficiary()))->toArray(),
             'pagador' => (new Payee($boleto->getPayee()))->toArray(),
             'nossoNumero' => $boleto->getOurNumber(),
             'seuNumero' => $boleto->getYourNumber(),
@@ -30,6 +29,10 @@ class Boleto
             'informativo' => (new Messages($boleto->getInformation()))->toArray(),
             'mensagem' => (new Messages($boleto->getMessages()))->toArray(),
         ];
+
+        if (!empty($boleto->getBeneficiary()->getName())) {
+            $base['beneficiarioFinal'] = (new Beneficiary($boleto->getBeneficiary()))->toArray();
+        }
 
         if (!empty($boleto->getDiscounts())) {
             $base = array_merge($base, (new DiscountConfiguration($boleto->getDiscounts()))->toArray());
