@@ -135,12 +135,16 @@ class Boleto
      */
     public static function mapFromQuery($data): BoletoDomain
     {
-        $beneficiary = new BeneficiaryDomain(
-            $data['beneficiarioFinal']['nome'],
-            $data['beneficiarioFinal']['documento'],
-            null,
-            $data['beneficiarioFinal']['codigo']
-        );
+        if (!empty($data['beneficiarioFinal'])) {
+            $beneficiary = new BeneficiaryDomain(
+                $data['beneficiarioFinal']['nome'],
+                $data['beneficiarioFinal']['documento'],
+                null,
+                $data['beneficiarioFinal']['codigo']
+            );
+        } else {
+            $beneficiary = new BeneficiaryDomain('', '');
+        }
 
         $payee = new PayeeDomain(
             $data['pagador']['nome'],
@@ -232,7 +236,7 @@ class Boleto
 
         foreach ($data as $item) {
             // dataPagamento = 2021-09-01 07:23:28.7
-            $date = DateTime::createFromFormat('Y-m-d H:i:s.u', $item['dataPagamento']);
+            $date = DateTime::createFromFormat('Y-m-d H:i:s', $item['dataPagamento']);
             $liquidation = new LiquidationDomain(
                 $date,
                 (float) $item['valorLiquidado'],

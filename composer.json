@@ -1,5 +1,5 @@
 {
-    "name": "brunopansani/sicredi-api",
+    "name": "matfatjoe/sicredi-api",
     "description": "A PHP SDK for the Sicredi API",
     "license": "MIT",
     "type": "library",
@@ -13,6 +13,10 @@
         {
             "name": "Bruno Pansani",
             "email": "bruno@pansani.dev"
+        },
+        {
+            "name": "Matheus Furquim",
+            "email": "matheus.fdecamargo@gmail.com"
         }
     ],
     "require": {

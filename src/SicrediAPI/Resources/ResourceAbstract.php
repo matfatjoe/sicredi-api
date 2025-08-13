@@ -44,8 +44,13 @@ abstract class ResourceAbstract
         $this->checkToken();
 
         try {
+            // \Log::info('Buscando sicredi dia '. $options['query']['dia'] . ' ' . $this->apiClient->getBaseUrl() . $url);
+            // \Log::info($this->apiClient->getHttpClient()->get($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options))->getBody()->getContents());
+            //dd($this->apiClient->getHttpClient()->get($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options))->getBody()->getContents());
             $response = $this->apiClient->getHttpClient()->get($this->apiClient->getBaseUrl() . $url, $this->buildRequestOptions($options));
+
         } catch (\GuzzleHttp\Exception\ClientException $th) {
+
             throw $th;
         }
         return $this->response($response);

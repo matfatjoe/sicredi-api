@@ -34,10 +34,19 @@ class Boleto extends ResourceAbstract
 
             return $boleto;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
-            dd('a', $e, json_decode($e->getResponse()->getBody()->getContents()));
-            throw $e;
+            $response = $e->getResponse();
+            $bodyContent = json_decode(
+                $response->getBody()->getContents(),
+                true
+            );
+
+            if (isset($bodyContent['message']) && !empty($bodyContent['message'])) {
+                $exception = new \Exception($bodyContent['message']);
+            } else {
+                $exception = $e;
+            }
+            throw $exception;
         } catch (\Exception $e) {
-            dd('a', $e);
             throw $e;
         }
     }
@@ -72,16 +81,26 @@ class Boleto extends ResourceAbstract
         try {
             $url = $this->buildInstructionUrl($ourNumber, $endpointSuffix);
 
-            $response = $this->patch($url, [
-                'json' => $payload,
+            $options = [
                 'headers' => [
+                    'codigoBeneficiario' => $this->apiClient->getBeneficiaryCode(),
                     'cooperativa' => $this->apiClient->getCooperative(),
                     'posto' => $this->apiClient->getPost(),
-                ]
-            ]);
+                ],
+            ];
+
+            if (empty($payload)) {
+                $options['body'] = '{}';
+            } else {
+                $options['json'] = $payload;
+            }
+
+            $response = $this->patch($url, $options);
 
             return $response;
         } catch (\GuzzleHttp\Exception\ClientException $e) {
+            throw $e;
+        } catch (\Exception $e) {
             throw $e;
         }
     }
@@ -120,7 +139,7 @@ class Boleto extends ResourceAbstract
      * @return Liquidation[]
      * @throws GuzzleException
      */
-    private function getDailyLiquidationsByPage(int $page = 1, \DateTime $day)
+    private function getDailyLiquidationsByPage(int $page = 0, \DateTime $day)
     {
         $response = $this->get('/cobranca/boleto/v1/boletos/liquidados/dia', [
             'query' => [
@@ -133,7 +152,6 @@ class Boleto extends ResourceAbstract
                 'posto' => $this->apiClient->getPost(),
             ]
         ]);
-
         return $response;
     }
 

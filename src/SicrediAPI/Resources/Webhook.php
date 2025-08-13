@@ -25,5 +25,34 @@ class Webhook extends ResourceAbstract
         ]);
 
         return $webhook;
-    }    
+    }
+
+    public function getWebhook()
+    {
+        $response = $this->get('/cobranca/boleto/v1/webhook/contratos', [
+            'query' => [
+                'cooperativa' => $this->apiClient->getCooperative(),
+                'posto' => $this->apiClient->getPost(),
+                'beneficiario' => $this->apiClient->getBeneficiaryCode()
+            ],
+        ]);
+
+        return $response['idContrato'];
+    }
+    public function updateWebhook(WebhookDomain $webhook, $idContrato)
+    {
+        $payload = WebhookMapper::mapCreateWebhook($webhook);
+
+        $payload = array_merge(
+            $payload,
+            [
+                'cooperativa' => $this->apiClient->getCooperative(),
+                'posto' => $this->apiClient->getPost(),
+                'codBeneficiario' => $this->apiClient->getBeneficiaryCode()
+            ]
+        );
+        $this->put("/cobranca/boleto/v1/webhook/contrato/{$idContrato}", [
+            'json' => $payload,
+        ]);
+    }
 }

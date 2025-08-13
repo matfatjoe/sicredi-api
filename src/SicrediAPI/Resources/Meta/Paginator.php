@@ -58,17 +58,18 @@ class Paginator implements \Iterator
     public function __construct(ResourceAbstract $resource, callable $nextPage, callable $transformItems = null)
     {
         $this->position = 0;
-        $this->page = 1;
+        $this->page = 0;
 
         $this->resource = $resource;
         $this->nextPage = $nextPage;
         $this->transformItems = $transformItems;
+        $this->rewind();
     }
 
     public function rewind(): void
     {
         $this->position = 0;
-        $this->page = 1;
+        $this->page = 0;
         $this->loadItems();
     }
 
