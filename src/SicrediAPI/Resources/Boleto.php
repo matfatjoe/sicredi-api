@@ -125,7 +125,7 @@ class Boleto extends ResourceAbstract
     public function queryDailyLiquidations(\DateTime $day)
     {
         $liquidations = new Meta\Paginator($this, function ($page) use ($day) {
-            return $this->getDailyLiquidationsByPage($page, $day);
+            return $this->getDailyLiquidationsByPage($day, $page);
         }, function ($items) {
             return BoletoMapper::mapFromQueryDailyLiquidations($items);
         });
