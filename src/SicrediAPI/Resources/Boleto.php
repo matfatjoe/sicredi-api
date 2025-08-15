@@ -139,7 +139,7 @@ class Boleto extends ResourceAbstract
      * @return Liquidation[]
      * @throws GuzzleException
      */
-    private function getDailyLiquidationsByPage(int $page = 0, \DateTime $day)
+    private function getDailyLiquidationsByPage(\DateTime $day, int $page = 0)
     {
         $response = $this->get('/cobranca/boleto/v1/boletos/liquidados/dia', [
             'query' => [
